@@ -138,13 +138,7 @@ void Driver::VouchDriver(const dpp::interaction_create_t& event)
 
 	if (!pDriver)
 	{
-		dpp::message Message;
-		dpp::embed Embed;
-
-		Embed.set_description("Invalid driver specified.");
-		Embed.set_color(g_pConfig->m_MessageColorWarning);
-		Message.add_embed(Embed);
-		event.reply(Message);
+		Utility::ReplyError(event, "Invalid driver specified.");
 
 		return;
 	}
@@ -154,10 +148,7 @@ void Driver::VouchDriver(const dpp::interaction_create_t& event)
 	// Return if self vouch
 	if (*pDriver == event.command.get_issuing_user().id)
 	{
-		Embed.set_description("You can't vouch for yourself.");
-		Embed.set_color(g_pConfig->m_MessageColorWarning);
-		Message.add_embed(Embed);
-		event.reply(Message);
+		Utility::ReplyError(event, "You can't vouch for yourself.");
 
 		return;
 	}
@@ -177,12 +168,8 @@ void Driver::VouchDriver(const dpp::interaction_create_t& event)
 	}
 	catch (sql::SQLException& Exception)
 	{
-		if (Exception.getErrorCode() == 1062) { // DUPLICATE KEY
-			Embed.set_description("You can only vouch for this user once.");
-			Embed.set_color(g_pConfig->m_MessageColorWarning);
-			Message.add_embed(Embed);
-			event.reply(Message);
-		}
+		if (Exception.getErrorCode() == 1062) // DUPLICATE KEY
+			Utility::ReplyError(event, "You can only vouch for this user once.");
 
 		return;
 	}
@@ -215,13 +202,7 @@ void Driver::ViewDriverInfo(const dpp::interaction_create_t& event, dpp::snowfla
 
 	if (!pDriver)
 	{
-		dpp::message Message;
-		dpp::embed Embed;
-
-		Embed.set_description("Invalid driver specified.");
-		Embed.set_color(g_pConfig->m_MessageColorWarning);
-		Message.add_embed(Embed);
-		event.reply(Message);
+		Utility::ReplyError(event, "Invalid driver specified.");
 
 		return;
 	}
@@ -230,13 +211,7 @@ void Driver::ViewDriverInfo(const dpp::interaction_create_t& event, dpp::snowfla
 	{
 		if (!Utility::IsValidRaid(*pRaid, true))
 		{
-			dpp::message Message;
-			dpp::embed Embed;
-
-			Embed.set_description("Invalid raid type specified.");
-			Embed.set_color(g_pConfig->m_MessageColorWarning);
-			Message.add_embed(Embed);
-			event.reply(Message);
+			Utility::ReplyError(event, "Invalid raid type specified.");
 
 			return;
 		}
@@ -264,13 +239,7 @@ void Driver::ModifyRuns(const dpp::interaction_create_t& event, bool ModifyCap, 
 
 	if (!pDriver)
 	{
-		dpp::message Message;
-		dpp::embed Embed;
-
-		Embed.set_description("Invalid driver specified.");
-		Embed.set_color(g_pConfig->m_MessageColorWarning);
-		Message.add_embed(Embed);
-		event.reply(Message);
+		Utility::ReplyError(event, "Invalid driver specified.");
 
 		return;
 	}
@@ -290,20 +259,14 @@ void Driver::ModifyRuns(const dpp::interaction_create_t& event, bool ModifyCap, 
 
 	if (*pDriverCount > 4 || *pDriverCount < 1)
 	{
-		Embed.set_description("Invalid driver count.");
-		Embed.set_color(g_pConfig->m_MessageColorWarning);
-		Message.add_embed(Embed);
-		event.reply(Message);
+		Utility::ReplyError(event, "Invalid driver count.");
 
 		return;
 	}
 
 	if (!Utility::IsValidRaid(*pRaid, false))
 	{
-		Embed.set_description("Invalid raid type specified.");
-		Embed.set_color(g_pConfig->m_MessageColorWarning);
-		Message.add_embed(Embed);
-		event.reply(Message);
+		Utility::ReplyError(event, "Invalid raid type specified.");
 
 		return;
 	}
@@ -385,13 +348,7 @@ void Driver::WipeRuns(const dpp::interaction_create_t& event)
 
 	if (!pDriver)
 	{
-		dpp::message Message;
-		dpp::embed Embed;
-
-		Embed.set_description("Invalid driver specified.");
-		Embed.set_color(g_pConfig->m_MessageColorWarning);
-		Message.add_embed(Embed);
-		event.reply(Message);
+		Utility::ReplyError(event, "Invalid driver specified.");
 
 		return;
 	}
@@ -400,10 +357,7 @@ void Driver::WipeRuns(const dpp::interaction_create_t& event)
 
 	if (pRaid && !Utility::IsValidRaid(*pRaid, false))
 	{
-		Embed.set_description("Invalid raid type specified.");
-		Embed.set_color(g_pConfig->m_MessageColorWarning);
-		Message.add_embed(Embed);
-		event.reply(Message);
+		Utility::ReplyError(event, "Invalid raid type specified.");
 
 		return;
 	}
@@ -422,10 +376,7 @@ void Driver::WipeRuns(const dpp::interaction_create_t& event)
 		// Insert if this is the first raid of this type for this driver
 		if (!pRaidResults->next())
 		{
-			Embed.set_description("The driver has no raids to wipe.");
-			Embed.set_color(g_pConfig->m_MessageColorWarning);
-			Message.add_embed(Embed);
-			event.reply(Message);
+			Utility::ReplyError(event, "The driver has no raids to wipe.");
 
 			return;
 		}

@@ -220,3 +220,13 @@ std::unique_ptr<sql::ResultSet> Utility::GetDriver(dpp::snowflake Driver)
 
 	return pDriverResults;
 }
+
+void Utility::ReplyError(const dpp::interaction_create_t& event, std::string Message)
+{
+	dpp::embed Embed;
+
+	Embed.set_description(Message);
+	Embed.set_color(g_pConfig->m_MessageColorWarning);
+
+	event.reply(dpp::message().add_embed(Embed));
+}
