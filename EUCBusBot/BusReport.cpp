@@ -1,4 +1,4 @@
-#include "BusReport.h"
+﻿#include "BusReport.h"
 #include "ConfigManager.h"
 #include "Utility.h"
 #include "Bot.h"
@@ -102,7 +102,7 @@ dpp::message BusReport::GenerateReportMessage(const dpp::embed_author Author, co
 	return Message;
 }
 
-void BusReport::CreateReportForm(const dpp::slashcommand_t& event)
+void BusReport::CreateReportForm(const dpp::interaction_create_t& event)
 {
 	std::string ScreenshotURL;
 	std::vector<dpp::snowflake> Drivers;
@@ -197,7 +197,7 @@ void BusReport::PreviewReport(const dpp::button_click_t& event)
 	dpp::user IssuingDriver = event.command.get_issuing_user();
 	uint64_t ReportID = IssuingDriver.id;
 
-	// Prevent response to forms with last data due to bot restart
+	// Prevent response to forms with lost data due to bot restart
 	if (IsOutdatedForm(ReportID, event))
 		return;
 
@@ -229,7 +229,7 @@ void BusReport::PreviewReport(const dpp::button_click_t& event)
 	dpp::embed_author Author;
 	Author.name = IssuingDriver.format_username() + " [PREVIEW]";
 	Author.icon_url = IssuingDriver.get_avatar_url();
-
+	
 	// Create preview message
 	dpp::message Message = GenerateReportMessage(Author, "Has reported their bus ride:", DestinationIndex, Record);
 	Message.set_flags(dpp::m_ephemeral);

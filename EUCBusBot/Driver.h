@@ -9,10 +9,10 @@
 class Driver
 {
 public:
-	void InfoGeneral(const dpp::snowflake Driver, const dpp::slashcommand_t& event);
-	void InfoRaid(const dpp::snowflake Driver, const std::string Raid, const dpp::slashcommand_t& event);
-	void VouchDriver(const dpp::slashcommand_t& event);
-	void ViewDriverInfo(const dpp::slashcommand_t& event);
-	void ModifyRuns(const dpp::slashcommand_t& event, bool ModifyCap, bool Add);
-	void WipeRuns(const dpp::slashcommand_t& event);
+	void InfoGeneral(const dpp::snowflake Driver, const dpp::interaction_create_t& event);
+	void InfoRaid(const dpp::snowflake Driver, const std::string Raid, const dpp::interaction_create_t& event);
+	void VouchDriver(const dpp::interaction_create_t& event);
+	void ViewDriverInfo(const dpp::interaction_create_t& event, dpp::snowflake ContextDriver = 0);
+	void ModifyRuns(const dpp::interaction_create_t& event, bool ModifyCap, bool Add);
+	void WipeRuns(const dpp::interaction_create_t& event);
 };

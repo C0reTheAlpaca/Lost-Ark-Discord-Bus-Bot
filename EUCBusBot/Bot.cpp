@@ -9,14 +9,13 @@ Bot::Bot()
 {
 	// Load config
 	g_pConfig = new ConfigManager("config.json");
-	std::string Token = g_pConfig->GetToken();
 
 	// Setup command handlers
 	m_pDriver = new Driver();
 	m_pBusReport = new BusReport();
 
 	// Setup cluster
-	g_pCluster = new dpp::cluster(Token);
+	g_pCluster = new dpp::cluster(g_pConfig->m_BotToken);
 	g_pCluster->on_log(dpp::utility::cout_logger());
 
 	// Register
@@ -107,10 +106,25 @@ void Bot::RegisterCommands()
 
 		g_pCluster->global_command_create(Command.m_Command);
 	}
+
+	g_pCluster->guild_command_create(
+		dpp::slashcommand()
+		.set_type(dpp::ctxm_user)
+		.set_name("Driver Info")
+		.set_application_id(g_pCluster->me.id),
+		g_pConfig->m_GuildID
+	);
 }
 
 void Bot::RegisterEvents()
 {
+	g_pCluster->on_user_context_menu([&](const dpp::user_context_menu_t& event)
+		{
+		if (event.command.get_command_name() == "Driver Info") {
+			m_pDriver->ViewDriverInfo(event, event.get_user().id);
+		}
+	});
+
 	g_pCluster->on_slashcommand([this](const dpp::slashcommand_t& event)
 		{
 			if (event.command.get_command_name() == "bus") {

@@ -1,8 +1,8 @@
-#include "Driver.h"
+﻿#include "Driver.h"
 #include "Utility.h"
 #include "ConfigManager.h"
 
-void Driver::InfoGeneral(const dpp::snowflake Driver, const dpp::slashcommand_t& event)
+void Driver::InfoGeneral(const dpp::snowflake Driver, const dpp::interaction_create_t& event)
 {
 	dpp::embed Embed;
 	dpp::message Message;
@@ -77,7 +77,7 @@ void Driver::InfoGeneral(const dpp::snowflake Driver, const dpp::slashcommand_t&
 	event.reply(Message);
 }
 
-void Driver::InfoRaid(const dpp::snowflake Driver, const std::string Raid, const dpp::slashcommand_t& event)
+void Driver::InfoRaid(const dpp::snowflake Driver, const std::string Raid, const dpp::interaction_create_t& event)
 {
 	dpp::embed Embed;
 	dpp::message Message;
@@ -127,7 +127,7 @@ void Driver::InfoRaid(const dpp::snowflake Driver, const std::string Raid, const
 	event.reply(Message);
 }
 
-void Driver::VouchDriver(const dpp::slashcommand_t& event)
+void Driver::VouchDriver(const dpp::interaction_create_t& event)
 {
 	dpp::embed Embed;
 	dpp::message Message;
@@ -203,12 +203,15 @@ void Driver::VouchDriver(const dpp::slashcommand_t& event)
 	event.reply(Message);
 }
 
-void Driver::ViewDriverInfo(const dpp::slashcommand_t& event)
+void Driver::ViewDriverInfo(const dpp::interaction_create_t& event, dpp::snowflake ContextDriver)
 {
 	dpp::command_value DriverValue = event.get_parameter("driver");
 	dpp::command_value RaidValue = event.get_parameter("raid");
 	dpp::snowflake* pDriver = std::get_if<dpp::snowflake>(&DriverValue);
 	std::string* pRaid = std::get_if<std::string>(&RaidValue);
+
+	if (ContextDriver)
+		pDriver = new dpp::snowflake(ContextDriver);
 
 	if (!pDriver)
 	{
@@ -244,9 +247,12 @@ void Driver::ViewDriverInfo(const dpp::slashcommand_t& event)
 	}
 
 	InfoGeneral(*pDriver, event);
+
+	if (ContextDriver)
+		delete pDriver;
 }
 
-void Driver::ModifyRuns(const dpp::slashcommand_t& event, bool ModifyCap, bool Add)
+void Driver::ModifyRuns(const dpp::interaction_create_t& event, bool ModifyCap, bool Add)
 {
 	dpp::embed Embed;
 	dpp::message Message;
@@ -282,8 +288,15 @@ void Driver::ModifyRuns(const dpp::slashcommand_t& event, bool ModifyCap, bool A
 	if (!pAmount || (!ModifyCap && !pDriverCount) || !pRaid)
 		return;
 
-	if (pDriverCount && (*pDriverCount > 4 || *pDriverCount < 1))
+	if (*pDriverCount > 4 || *pDriverCount < 1)
+	{
+		Embed.set_description("Invalid driver count.");
+		Embed.set_color(g_pConfig->m_MessageColorWarning);
+		Message.add_embed(Embed);
+		event.reply(Message);
+
 		return;
+	}
 
 	if (!Utility::IsValidRaid(*pRaid, false))
 	{
@@ -359,7 +372,7 @@ void Driver::ModifyRuns(const dpp::slashcommand_t& event, bool ModifyCap, bool A
 	event.reply(Message);
 }
 
-void Driver::WipeRuns(const dpp::slashcommand_t& event)
+void Driver::WipeRuns(const dpp::interaction_create_t& event)
 {
 	dpp::embed Embed;
 	dpp::message Message;

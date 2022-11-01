@@ -35,13 +35,13 @@ public:
 	ConfigManager(std::string FileName);
 	void Parse(std::string FileName);
 	void CreateConfig(std::string FileName);
-	std::string GetToken();
 
 public:
 	int m_MaxReportsPerWeek;
 	int m_MessageColor, m_MessageColorWarning, m_MessageColorInfo;
 	long m_ReportChannelID, m_AdminChannelID;
 
+	dpp::snowflake m_GuildID;
 	std::string m_BotToken;
 	std::vector<Destination> m_Destinations;
 	std::map<uint64_t, ReportRecord> m_Reports;

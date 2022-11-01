@@ -63,7 +63,6 @@ std::time_t Utility::GetLastWeeklyResetTime()
 	return Time - SinceReset;
 }
 
-
 void Utility::UpdateDriverRole(const dpp::snowflake GuildID, const dpp::snowflake Driver, const std::string Raid, const bool Wipe)
 {
 	dpp::guild_member Member = g_pCluster->guild_get_member_sync(GuildID, Driver);

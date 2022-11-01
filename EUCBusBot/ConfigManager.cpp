@@ -28,6 +28,7 @@ void ConfigManager::CreateConfig(std::string FileName)
 	Json["DBConnection"]["Reconnect"] = true;
 
 	Json["Settings"] = nlohmann::json::object();
+	Json["Settings"]["GuildID"] = 1019322368935612596;
 	Json["Settings"]["BotToken"] = "NI2F3QYTIMNgAxMTNAM0xDD5Oj.meLJdf.xJkMj_7R0cYXLFvcZt4qiVqGU7UNlhlxMM9nIv";
 	Json["Settings"]["MessageColor"] = 0xFEE75C;
 	Json["Settings"]["MessageColorInfo"] = 0xED7542;
@@ -47,6 +48,9 @@ void ConfigManager::CreateConfig(std::string FileName)
 	Json["Raids"]["Valtan"]["Difficulties"][1] = "Hard";
 	Json["Raids"]["Vykas"]["Difficulties"][0] = "Normal";
 	Json["Raids"]["Vykas"]["Difficulties"][1] = "Hard";
+	Json["Raids"]["Argos"]["Thresholds"][0] = 10;
+	Json["Raids"]["Argos"]["RoleIDs"][0] = 1020758523140907078;
+	Json["Raids"]["Argos"]["TierRoleIDs"][0] = 1020758523140907078;
 
 	std::string JsonString = Json.dump(4);
 
@@ -70,6 +74,7 @@ void ConfigManager::Parse(std::string FileName)
 	};
 
 	// Load config
+	m_GuildID = m_Config["Settings"]["GuildID"].get<uint64_t>();
 	m_BotToken = m_Config["Settings"]["BotToken"].get<std::string>();
 	m_MessageColor = m_Config["Settings"]["MessageColor"].get<int>();
 	m_MessageColorInfo = m_Config["Settings"]["MessageColorInfo"].get<int>();
@@ -151,9 +156,4 @@ void ConfigManager::Parse(std::string FileName)
 
 		throw 0xDEADDEAD;
 	}
-}
-
-std::string ConfigManager::GetToken()
-{
-	return m_BotToken;
 }
