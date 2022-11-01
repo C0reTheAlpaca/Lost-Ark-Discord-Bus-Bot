@@ -1,0 +1,3 @@
+[submodule "EUCBusBot/libs/DPP"]
+	path = EUCBusBot/libs/DPP
+	url = https://github.com/brainboxdotcc/DPP.git
