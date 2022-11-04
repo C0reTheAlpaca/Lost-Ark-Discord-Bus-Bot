@@ -288,11 +288,6 @@ void Driver::ModifyRuns(const dpp::interaction_create_t& event, bool ModifyCap, 
 		pStmt->setInt64(3, std::time(nullptr));
 		pStmt->execute();
 	}
-	else if (!pRaidResults->next())
-	{
-		Utility::ReplyError(event, "The driver has no records for this raid yet.");
-		return;
-	}
 
 	if (ModifyCap)
 	{
