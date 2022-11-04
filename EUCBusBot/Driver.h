@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <dpp/dpp.h>
 #include <cppconn/driver.h>
 #include <cppconn/exception.h>

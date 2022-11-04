@@ -1,4 +1,4 @@
-#include "ReportRecord.h"
+﻿#include "ReportRecord.h"
 
 std::string UserList::GetEmbedList()
 {
@@ -6,7 +6,7 @@ std::string UserList::GetEmbedList()
 
 	for (dpp::snowflake User : m_Entries)
 	{
-		EmbedList += "� <@" + std::to_string(User) + ">\n";
+		EmbedList += "• <@" + std::to_string(User) + ">\n";
 	}
 
 	if (EmbedList.empty())

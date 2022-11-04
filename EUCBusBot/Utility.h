@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <regex>
 #include <dpp/dpp.h>
 #include <cppconn/resultset.h>

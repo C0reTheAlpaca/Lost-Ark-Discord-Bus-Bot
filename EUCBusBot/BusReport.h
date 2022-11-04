@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <dpp/dpp.h>
 #include <cppconn/resultset.h>
 #include <cppconn/prepared_statement.h>

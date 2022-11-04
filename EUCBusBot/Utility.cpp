@@ -1,4 +1,4 @@
-#include "Utility.h"
+﻿#include "Utility.h"
 #include "ConfigManager.h"
 #include "Bot.h"
 
@@ -120,9 +120,9 @@ void Utility::UpdateDriverRole(const dpp::snowflake GuildID, const dpp::snowflak
 			int Index = std::distance(It, RoleSets[i].rend()) - 1;
 
 			// Use raid specific count or highest count of all raids depending on role set
-			int Count = i == 0 ? RunResults[Raid] : HighestCount;
+			int Count = i == 0 ? RunResults[RaidShortName] : HighestCount;
 
-			if (Found || HighestCount < Thresholds[Index])
+			if (Found || Count < Thresholds[Index])
 			{
 				if (std::find(Member.roles.begin(), Member.roles.end(), *It) != Member.roles.end())
 					g_pCluster->guild_member_delete_role(Member.guild_id, Member.user_id, *It);
@@ -130,7 +130,7 @@ void Utility::UpdateDriverRole(const dpp::snowflake GuildID, const dpp::snowflak
 				continue;
 			}
 
-			if (HighestCount >= Thresholds[Index])
+			if (Count >= Thresholds[Index])
 			{
 				uint64_t Role = *It;
 

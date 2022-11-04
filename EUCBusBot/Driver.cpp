@@ -252,7 +252,7 @@ void Driver::ModifyRuns(const dpp::interaction_create_t& event, bool ModifyCap, 
 	if (!pAmount || (!ModifyCap && !pDriverCount) || !pRaid)
 		return;
 
-	if (*pDriverCount > 4 || *pDriverCount < 1)
+	if (pDriverCount && (*pDriverCount > 4 || *pDriverCount < 1))
 	{
 		Utility::ReplyError(event, "Invalid driver count.");
 		return;
@@ -275,7 +275,7 @@ void Driver::ModifyRuns(const dpp::interaction_create_t& event, bool ModifyCap, 
 	std::unique_ptr<sql::ResultSet> pRaidResults(pStmt->executeQuery());
 
 	// Insert if this is the first raid of this type for this driver
-	if (!pRaidResults->next())
+	if (pDriverCount && !pRaidResults->next())
 	{
 		std::string DriverCount = std::to_string(*pDriverCount);
 
@@ -287,6 +287,11 @@ void Driver::ModifyRuns(const dpp::interaction_create_t& event, bool ModifyCap, 
 		pStmt->setString(2, *pRaid);
 		pStmt->setInt64(3, std::time(nullptr));
 		pStmt->execute();
+	}
+	else if (!pRaidResults->next())
+	{
+		Utility::ReplyError(event, "The driver has no records for this raid yet.");
+		return;
 	}
 
 	if (ModifyCap)
