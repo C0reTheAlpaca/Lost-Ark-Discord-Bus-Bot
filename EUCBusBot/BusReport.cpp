@@ -49,7 +49,7 @@ dpp::message BusReport::GenerateReportForm(ReportRecord Record)
 
 	for (auto Destination : g_pConfig->m_Destinations)
 	{
-		DestinationOptions.add_select_option(dpp::select_option(Destination.Name, Destination.Name));
+		DestinationOptions.add_select_option(dpp::select_option(Destination.DisplayName, Destination.Name));
 	}
 
 	DestinationDropdown.add_component(DestinationOptions);
@@ -91,7 +91,7 @@ dpp::message BusReport::GenerateReportMessage(const dpp::embed_author Author, co
 	Embed.set_description(Description);
 	Embed.add_field("Busdriver(s)", Record.GetDrivers().GetEmbedList(), true);
 	Embed.add_field("Passenger(s)", Record.GetPassengers().GetEmbedList(), true);
-	Embed.add_field("Where did the bus go?", Record.GetDestination(), false);
+	Embed.add_field("Where did the bus go?", g_pConfig->m_Destinations[DestinationIndex].DisplayName, false);
 	Embed.add_field("Number of drivers:", std::to_string(Record.GetDriverCount()), false);
 	Embed.set_image(Record.GetAttachment());
 	Embed.set_timestamp(time(0));
@@ -187,6 +187,9 @@ void BusReport::CancelReport(const dpp::button_click_t& event)
 {
 	event.reply();
 	event.edit_original_response(dpp::message("https://tenor.com/view/the-simpsons-accident-bus-crash-explosion-gif-20418233"));
+
+	uint64_t ReportID = event.command.get_issuing_user().id;
+	m_Reports.erase(ReportID);
 }
 
 void BusReport::PreviewReport(const dpp::button_click_t& event)
@@ -217,13 +220,11 @@ void BusReport::PreviewReport(const dpp::button_click_t& event)
 		return;
 	}
 
-	int DestinationIndex = 0;
+	int DestinationIndex;
+	std::string RaidShortName;
+	std::string RaidName = Record.GetDestination();
 
-	for (auto It = g_pConfig->m_Destinations.begin(); It != g_pConfig->m_Destinations.end(); It++)
-	{
-		if (It->Name == Dest)
-			DestinationIndex = std::distance(g_pConfig->m_Destinations.begin(), It);
-	}
+	Utility::GetRaidIndexShortName(RaidName, DestinationIndex, RaidShortName);
 
 	// Create Author
 	dpp::embed_author Author;
@@ -305,14 +306,11 @@ void BusReport::ConfirmReport(const dpp::button_click_t& event)
 	ReportRecord Record = m_Reports[ReportID];
 	std::string Dest = Record.GetDestination();
 
-	int DestinationIndex = 0;
+	int DestinationIndex;
+	std::string RaidShortName;
+	std::string RaidName = Record.GetDestination();
 
-	for (auto It = g_pConfig->m_Destinations.begin(); It != g_pConfig->m_Destinations.end(); It++)
-	{
-		if (It->Name == Dest)
-			DestinationIndex = std::distance(g_pConfig->m_Destinations.begin(), It);
-	}
-
+	Utility::GetRaidIndexShortName(RaidName, DestinationIndex, RaidShortName);
 	std::string DriverCount = std::to_string(Record.GetDriverCount());
 
 	for (dpp::snowflake Driver : Record.GetDrivers().m_Entries)
@@ -327,7 +325,7 @@ void BusReport::ConfirmReport(const dpp::button_click_t& event)
 		));
 
 		pStmt->setInt64(1, Driver);
-		pStmt->setString(2, g_pConfig->m_Destinations[DestinationIndex].ShortName);
+		pStmt->setString(2, RaidShortName);
 		std::unique_ptr<sql::ResultSet> pResults(pStmt->executeQuery());
 
 		// Get info of driver about this raid
@@ -336,7 +334,7 @@ void BusReport::ConfirmReport(const dpp::button_click_t& event)
 		));
 
 		pStmt->setInt64(1, Driver);
-		pStmt->setString(2, g_pConfig->m_Destinations[DestinationIndex].Name);
+		pStmt->setString(2, RaidName);
 		std::unique_ptr<sql::ResultSet> pRaidResults(pStmt->executeQuery());
 
 		// Insert if this is the first raid of this type for this driver
@@ -348,7 +346,7 @@ void BusReport::ConfirmReport(const dpp::button_click_t& event)
 			));
 
 			pStmt->setInt64(1, Driver);
-			pStmt->setString(2, Record.GetDestination());
+			pStmt->setString(2, RaidName);
 			pStmt->setInt64(3, std::time(nullptr));
 			pStmt->execute();
 
@@ -373,7 +371,7 @@ void BusReport::ConfirmReport(const dpp::button_click_t& event)
 				));
 
 				pStmt->setInt64(1, Driver);
-				pStmt->setString(2, g_pConfig->m_Destinations[DestinationIndex].ShortName);
+				pStmt->setString(2, RaidShortName);
 				pStmt->execute();
 			}
 
@@ -400,11 +398,11 @@ void BusReport::ConfirmReport(const dpp::button_click_t& event)
 
 			pStmt->setInt64(1, std::time(nullptr));
 			pStmt->setInt64(2, Driver);
-			pStmt->setString(3, Record.GetDestination());
+			pStmt->setString(3, RaidName);
 			pStmt->execute();
 		}
 
-		Utility::UpdateDriverRole(event.command.guild_id, Driver, Record.GetDestination(), false);
+		Utility::UpdateDriverRole(event.command.guild_id, Driver, RaidShortName, false);
 	}
 
 	// Create mentions
@@ -449,6 +447,8 @@ void BusReport::ConfirmReport(const dpp::button_click_t& event)
 			dpp::embed().set_description("You successfully reported a raid.").set_color(g_pConfig->m_MessageColor)
 		)
 	);
+
+	m_Reports.erase(ReportID);
 }
 
 bool BusReport::IsOutdatedForm(const uint64_t ReportID, const dpp::button_click_t& event)
@@ -465,6 +465,8 @@ bool BusReport::IsOutdatedForm(const uint64_t ReportID, const dpp::button_click_
 	Message.add_embed(Embed);
 
 	event.edit_original_response(Message);
+
+	m_Reports.erase(ReportID);
 
 	return true;
 }

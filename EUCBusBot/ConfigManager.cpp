@@ -90,55 +90,22 @@ void ConfigManager::Parse(std::string FileName)
 	m_DBConnection["port"] = m_Config["DBConnection"]["Port"].get<int>();
 	m_DBConnection["OPT_RECONNECT"] = m_Config["DBConnection"]["Reconnect"].get<bool>();
 
-	for (auto& Raid : m_Config["Raids"].items())
+	for (JsonItems& Raid : m_Config["Raids"].items())
 	{
-		Destination NewDest;
-		NewDest.Name = Raid.key();
-		NewDest.ShortName = Raid.key();
-		NewDest.Thumbnail = Raid.value()["Image"].get<std::string>();
-		NewDest.Type = m_RaidLookup[Raid.value()["Type"].get<std::string>()];
-
-		if (Raid.value().contains("Achievements") &&
-			Raid.value()["Achievements"].contains("Thresholds") &&
-			Raid.value()["Achievements"].contains("RoleIDs") &&
-			Raid.value()["Achievements"].contains("TierRoleIDs"))
+		if (Raid.value().contains("SubRaids"))
 		{
-			for (auto& Threshold : Raid.value()["Achievements"]["Thresholds"])
+			for (std::string SubRaid : Raid.value()["SubRaids"])
 			{
-				m_RaidAchievements[NewDest.ShortName].Thresholds.push_back(
-					Threshold.get<int>()
-				);
-			}
-
-			for (auto& RoleID : Raid.value()["Achievements"]["RoleIDs"])
-			{
-				m_RaidAchievements[NewDest.ShortName].Roles.push_back(
-					RoleID.get<uint64_t>()
-				);
-			}
-
-			for (auto& TierRoleID : Raid.value()["Achievements"]["TierRoleIDs"])
-			{
-				m_RaidAchievements[NewDest.ShortName].TierRoles.push_back(
-					TierRoleID.get<uint64_t>()
-				);
-			}
-		}
-
-		if (Raid.value().contains("Difficulties"))
-		{
-			for (auto& Difficulty : Raid.value()["Difficulties"])
-			{
-				NewDest.Name = Raid.key() + std::string(" ") + Difficulty.get<std::string>();
-				m_Destinations.push_back(NewDest);
+				AddRaid(Raid, Raid.key() + "_" + SubRaid, Raid.key() + " (" + SubRaid + ")");
 			}
 		}
 		else
 		{
-			m_Destinations.push_back(NewDest);
-			continue;
+			AddRaid(Raid, Raid.key(), Raid.key());
 		}
 	}
+
+	auto destinations = m_Destinations;
 
 	// Setup MySQl connection
 	sql::Driver* pDriver = get_driver_instance();
@@ -155,5 +122,56 @@ void ConfigManager::Parse(std::string FileName)
 			", SQLState: " << Exception.getSQLState() << " )" << std::endl;
 
 		throw 0xDEADDEAD;
+	}
+}
+
+void ConfigManager::AddRaid(const JsonItems& Raid, const std::string Name, const std::string DisplayName)
+{
+	Destination NewDest;
+	NewDest.Name = Name;
+	NewDest.ShortName = Name;
+	NewDest.DisplayName = DisplayName;
+	NewDest.Thumbnail = Raid.value()["Image"].get<std::string>();
+	NewDest.Type = m_RaidLookup[Raid.value()["Type"].get<std::string>()];
+
+	if (Raid.value().contains("Achievements") &&
+		Raid.value()["Achievements"].contains("Thresholds") &&
+		Raid.value()["Achievements"].contains("RoleIDs") &&
+		Raid.value()["Achievements"].contains("TierRoleIDs"))
+	{
+		for (auto& Threshold : Raid.value()["Achievements"]["Thresholds"])
+		{
+			m_RaidAchievements[NewDest.ShortName].Thresholds.push_back(
+				Threshold.get<int>()
+			);
+		}
+
+		for (auto& RoleID : Raid.value()["Achievements"]["RoleIDs"])
+		{
+			m_RaidAchievements[NewDest.ShortName].Roles.push_back(
+				RoleID.get<uint64_t>()
+			);
+		}
+
+		for (auto& TierRoleID : Raid.value()["Achievements"]["TierRoleIDs"])
+		{
+			m_RaidAchievements[NewDest.ShortName].TierRoles.push_back(
+				TierRoleID.get<uint64_t>()
+			);
+		}
+	}
+
+	if (Raid.value().contains("Difficulties"))
+	{
+		for (auto& Difficulty : Raid.value()["Difficulties"])
+		{
+			NewDest.Name = Name + std::string(" ") + Difficulty.get<std::string>();
+			NewDest.DisplayName = DisplayName + std::string(" ") + Difficulty.get<std::string>();
+			m_Destinations.push_back(NewDest);
+		}
+	}
+	else
+	{
+		m_Destinations.push_back(NewDest);
 	}
 }

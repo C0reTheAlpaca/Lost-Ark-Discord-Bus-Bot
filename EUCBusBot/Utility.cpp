@@ -24,13 +24,30 @@ bool Utility::IsValidRaid(std::string Raid, bool Short)
 		std::string DestinationName = Short ? Destination.ShortName : Destination.Name;
 		std::string RaidName = Raid;
 
+		std::transform(RaidName.begin(), RaidName.end(), RaidName.begin(),
+			[](unsigned char c) { return std::tolower(c); }
+		);
+
 		std::transform(DestinationName.begin(), DestinationName.end(), DestinationName.begin(),
 			[](unsigned char c) { return std::tolower(c); }
 		);
 
-		std::transform(RaidName.begin(), RaidName.end(), RaidName.begin(),
-			[](unsigned char c) { return std::tolower(c); }
-		);
+		if (!Destination.SubRaids.empty())
+		{
+			for (std::string SubRaid : Destination.SubRaids)
+			{
+				std::string SubRaidName = DestinationName + SubRaid;
+
+				std::transform(SubRaidName.begin(), SubRaidName.end(), SubRaidName.begin(),
+					[](unsigned char c) { return std::tolower(c); }
+				);
+
+				if (SubRaidName == RaidName)
+					return true;
+			}
+
+			return false;
+		}
 
 		return DestinationName == RaidName;
 	};
@@ -63,16 +80,11 @@ std::time_t Utility::GetLastWeeklyResetTime()
 	return Time - SinceReset;
 }
 
-void Utility::UpdateDriverRole(const dpp::snowflake GuildID, const dpp::snowflake Driver, const std::string Raid, const bool Wipe)
+void Utility::UpdateDriverRole(const dpp::snowflake GuildID, const dpp::snowflake Driver, const std::string RaidShortName, const bool Wipe)
 {
+	bool IsSubRaid = false;
+	std::string SubraidRaidName;
 	dpp::guild_member Member = g_pCluster->guild_get_member_sync(GuildID, Driver);
-	std::string RaidShortName = "";
-
-	for (auto It = g_pConfig->m_Destinations.begin(); It != g_pConfig->m_Destinations.end(); It++)
-	{
-		if (It->Name == Raid)
-			RaidShortName = It->ShortName;
-	}
 
 	// Not sure if this can happen but better be safe
 	if (Member.user_id == (dpp::snowflake)0)
@@ -87,6 +99,14 @@ void Utility::UpdateDriverRole(const dpp::snowflake GuildID, const dpp::snowflak
 		 g_pConfig->m_RaidAchievements[RaidShortName].Roles,
 		 g_pConfig->m_RaidAchievements[RaidShortName].TierRoles
 	};
+
+	// Check if raid is a subraid
+	auto Position = RaidShortName.find("_");
+	if (Position != std::string::npos)
+	{
+		SubraidRaidName = RaidShortName.substr(0, Position);
+	    IsSubRaid = true;
+	}
 
 	// Get runs of driver
 	std::unique_ptr<sql::PreparedStatement> pStmt(g_pConnection->prepareStatement(
@@ -106,11 +126,23 @@ void Utility::UpdateDriverRole(const dpp::snowflake GuildID, const dpp::snowflak
 	{
 		int Count = pRunResults->getInt(2);
 
-		if (Count > HighestCount)
-			HighestCount = Count;
+		if (IsSubRaid && pRunResults->getString(1).find(SubraidRaidName) != std::string::npos)
+		{
+			RunResults[SubraidRaidName] += Count;
 
-		RunResults[pRunResults->getString(1)] = Count;
+			if (RunResults[SubraidRaidName] > HighestCount)
+				HighestCount = RunResults[SubraidRaidName];
+		}
+		else 
+		{
+			RunResults[pRunResults->getString(1)] = Count;
+
+			if (Count > HighestCount)
+				HighestCount = Count;
+		}
 	}
+
+	std::string RaidIndexName = IsSubRaid ? SubraidRaidName : RaidShortName;
 
 	for (int i = 0; i < 2; i++)
 	{
@@ -120,7 +152,7 @@ void Utility::UpdateDriverRole(const dpp::snowflake GuildID, const dpp::snowflak
 			int Index = std::distance(It, RoleSets[i].rend()) - 1;
 
 			// Use raid specific count or highest count of all raids depending on role set
-			int Count = i == 0 ? RunResults[RaidShortName] : HighestCount;
+			int Count = i == 0 ? RunResults[RaidIndexName] : HighestCount;
 
 			if (Found || Count < Thresholds[Index])
 			{
@@ -229,4 +261,19 @@ void Utility::ReplyError(const dpp::interaction_create_t& event, std::string Mes
 	Embed.set_color(g_pConfig->m_MessageColorWarning);
 
 	event.reply(dpp::message().add_embed(Embed));
+}
+
+void Utility::GetRaidIndexShortName(const std::string Destination, int& Index, std::string& ShortName)
+{
+	Index = 0;
+	ShortName = "";
+
+	for (auto It = g_pConfig->m_Destinations.begin(); It != g_pConfig->m_Destinations.end(); It++)
+	{
+		if (It->Name == Destination)
+		{
+			Index = std::distance(g_pConfig->m_Destinations.begin(), It);
+			ShortName = g_pConfig->m_Destinations[Index].ShortName;
+		}
+	}
 }

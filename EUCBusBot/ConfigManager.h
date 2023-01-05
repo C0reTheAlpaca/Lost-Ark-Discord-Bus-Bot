@@ -7,6 +7,8 @@
 #include <cppconn/exception.h>
 #include "ReportRecord.h"
 
+typedef nlohmann::detail::iteration_proxy_value<nlohmann::detail::iter_impl<nlohmann::ordered_json>> JsonItems;
+
 enum class RaidType : int
 {
 	RAID_LEGION,
@@ -18,7 +20,9 @@ struct Destination
 {
 	std::string Name;
 	std::string ShortName;
+	std::string DisplayName;
 	std::string Thumbnail;
+	std::vector<std::string> SubRaids;
 	RaidType Type;
 };
 
@@ -34,6 +38,7 @@ class ConfigManager
 public:
 	ConfigManager(std::string FileName);
 	void Parse(std::string FileName);
+	void AddRaid(const JsonItems& Raid, const std::string Name, const std::string DisplayName);
 	void CreateConfig(std::string FileName);
 
 public:
