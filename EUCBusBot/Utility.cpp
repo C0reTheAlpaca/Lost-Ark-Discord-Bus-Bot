@@ -101,16 +101,11 @@ void Utility::UpdateDriverRole(const dpp::snowflake GuildID, const dpp::snowflak
 	};
 
 	// Check if raid is a subraid
-	auto Position = RaidShortName.find("_");
-	if (Position != std::string::npos)
-	{
-		SubraidRaidName = RaidShortName.substr(0, Position);
-	    IsSubRaid = true;
-	}
+	IsSubRaid = Utility::IsSubRaid(RaidShortName, SubraidRaidName);
 
 	// Get runs of driver
 	std::unique_ptr<sql::PreparedStatement> pStmt(g_pConnection->prepareStatement(
-		"SELECT SUBSTRING_INDEX(Type, ' ', 1) as short_type, SUM(Count1) + SUM(Count2) + SUM(Count3) + SUM(Count4)"
+		"SELECT SUBSTRING_INDEX(Type, ' ', 1) as short_type, SUM(Count1) + SUM(Count2) + SUM(Count3) + SUM(Count4) + SUM(Count5) + SUM(Count6)"
 		"FROM `driver_completed_runs` WHERE DriverID = ? GROUP BY short_type;"
 	));
 
@@ -276,4 +271,19 @@ void Utility::GetRaidIndexShortName(const std::string Destination, int& Index, s
 			ShortName = g_pConfig->m_Destinations[Index].ShortName;
 		}
 	}
+}
+
+bool Utility::IsSubRaid(const std::string Destination, std::string& RaidName)
+{
+	RaidName = "";
+
+	// Check if raid is a subraid
+	auto Position = Destination.find("_");
+	if (Position != std::string::npos)
+	{
+		RaidName = Destination.substr(0, Position);
+		return true;
+	}
+
+	return false;
 }

@@ -10,7 +10,7 @@ void Driver::InfoGeneral(const dpp::snowflake Driver, const dpp::interaction_cre
 
 	// Get runs of driver
 	std::unique_ptr<sql::PreparedStatement> pStmt(g_pConnection->prepareStatement(
-		"SELECT SUBSTRING_INDEX(Type, ' ', 1) as short_type, SUM(Count1) + SUM(Count2) + SUM(Count3) + SUM(Count4) FROM "
+		"SELECT SUBSTRING_INDEX(Type, ' ', 1) as short_type, SUM(Count1) + SUM(Count2) + SUM(Count3) + SUM(Count4) + SUM(Count5) + SUM(Count6) FROM "
 		"`driver_completed_runs` WHERE DriverID = ? GROUP BY short_type;"
 	));
 
@@ -22,7 +22,18 @@ void Driver::InfoGeneral(const dpp::snowflake Driver, const dpp::interaction_cre
 
 	while (pRunResults->next())
 	{
-		RunData[pRunResults->getString(1)] = pRunResults->getInt(2);
+		// Check if raid is a subraid
+		std::string SubraidRaidName;
+		bool SubRaid = Utility::IsSubRaid(pRunResults->getString(1), SubraidRaidName);
+
+		if (SubRaid)
+		{
+			RunData[SubraidRaidName] += pRunResults->getInt(2);
+		}
+		else 
+		{
+			RunData[pRunResults->getString(1)] = pRunResults->getInt(2);
+		}
 	}
 
 	std::size_t TotalRuns = std::accumulate(
@@ -47,6 +58,8 @@ void Driver::InfoGeneral(const dpp::snowflake Driver, const dpp::interaction_cre
 	dpp::embed_author Author;
 	Author.name = DriverUser.format_username();
 	Author.icon_url = DriverUser.get_avatar_url();
+	Author.proxy_icon_url = DriverUser.get_avatar_url();
+	Author.url = DriverUser.get_avatar_url();
 
 	Embed.set_author(Author);
 	Embed.set_description("Overview of the busdriver:");
@@ -104,20 +117,37 @@ void Driver::InfoRaid(const dpp::snowflake Driver, const std::string Raid, const
 
 	while (pRunResults->next())
 	{
-		Embed.add_field(
-			pRunResults->getString("Type"),
-			"1 driver(s): " + std::to_string(pRunResults->getInt("Count1")) + "\n"
-			"2 driver(s): " + std::to_string(pRunResults->getInt("Count2")) + "\n"
-			"3 driver(s): " + std::to_string(pRunResults->getInt("Count3")) + "\n"
-			"4 driver(s): " + std::to_string(pRunResults->getInt("Count4"))
-			, true
-		);
+		if (Raid.find("Brelshaza") != std::string::npos) {
+			Embed.add_field(
+				pRunResults->getString("Type"),
+				"1 driver(s): " + std::to_string(pRunResults->getInt("Count1")) + "\n"
+				"2 driver(s): " + std::to_string(pRunResults->getInt("Count2")) + "\n"
+				"3 driver(s): " + std::to_string(pRunResults->getInt("Count3")) + "\n"
+				"4 driver(s): " + std::to_string(pRunResults->getInt("Count4")) + "\n"
+				"5 driver(s): " + std::to_string(pRunResults->getInt("Count5")) + "\n"
+				"6 driver(s): " + std::to_string(pRunResults->getInt("Count6"))
+				, true
+			);
+		}
+		else 
+		{
+			Embed.add_field(
+				pRunResults->getString("Type"),
+				"1 driver(s): " + std::to_string(pRunResults->getInt("Count1")) + "\n"
+				"2 driver(s): " + std::to_string(pRunResults->getInt("Count2")) + "\n"
+				"3 driver(s): " + std::to_string(pRunResults->getInt("Count3")) + "\n"
+				"4 driver(s): " + std::to_string(pRunResults->getInt("Count4"))
+				, true
+			);
+		}
 	}
 
 	// Create message
 	dpp::embed_author Author;
 	Author.name = DriverUser.format_username();
 	Author.icon_url = DriverUser.get_avatar_url();
+	Author.proxy_icon_url = DriverUser.get_avatar_url();
+	Author.url = DriverUser.get_avatar_url();
 
 	Embed.set_author(Author);
 	Embed.set_description(Raid + " raid stats of the driver:");
@@ -252,7 +282,7 @@ void Driver::ModifyRuns(const dpp::interaction_create_t& event, bool ModifyCap, 
 	if (!pAmount || (!ModifyCap && !pDriverCount) || !pRaid)
 		return;
 
-	if (pDriverCount && (*pDriverCount > 4 || *pDriverCount < 1))
+	if (pDriverCount && (*pDriverCount > 6 || *pDriverCount < 1))
 	{
 		Utility::ReplyError(event, "Invalid driver count.");
 		return;

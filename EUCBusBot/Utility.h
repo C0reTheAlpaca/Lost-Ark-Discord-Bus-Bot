@@ -12,6 +12,7 @@ public:
 	static void AddUpdateDriver(const bool UpdateLastRaidTime, const dpp::snowflake Driver);
 	static void ReplyError(const dpp::interaction_create_t& event, std::string Message);
 	static void GetRaidIndexShortName(const std::string Destination, int& Index, std::string& ShortName);
+	static bool IsSubRaid(const std::string Destination, std::string& RaidName);
 	static std::vector<dpp::snowflake> FilterMentions(std::string String);
 	static std::time_t GetLastWeeklyResetTime();
 	static std::unique_ptr<sql::ResultSet> GetDriver(dpp::snowflake Driver);

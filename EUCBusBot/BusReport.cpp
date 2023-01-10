@@ -46,6 +46,8 @@ dpp::message BusReport::GenerateReportForm(ReportRecord Record)
 	DriverOptions.add_select_option(dpp::select_option("2 driver(s)", "2"));
 	DriverOptions.add_select_option(dpp::select_option("3 driver(s)", "3"));
 	DriverOptions.add_select_option(dpp::select_option("4 driver(s)", "4"));
+	DriverOptions.add_select_option(dpp::select_option("5 driver(s)", "5"));
+	DriverOptions.add_select_option(dpp::select_option("6 driver(s)", "6"));
 
 	for (auto Destination : g_pConfig->m_Destinations)
 	{
@@ -230,7 +232,9 @@ void BusReport::PreviewReport(const dpp::button_click_t& event)
 	dpp::embed_author Author;
 	Author.name = IssuingDriver.format_username() + " [PREVIEW]";
 	Author.icon_url = IssuingDriver.get_avatar_url();
-	
+	Author.proxy_icon_url = IssuingDriver.get_avatar_url();
+	Author.url = IssuingDriver.get_avatar_url();
+
 	// Create preview message
 	dpp::message Message = GenerateReportMessage(Author, "Has reported their bus ride:", DestinationIndex, Record);
 	Message.set_flags(dpp::m_ephemeral);
@@ -429,6 +433,8 @@ void BusReport::ConfirmReport(const dpp::button_click_t& event)
 	dpp::embed_author Author;
 	Author.name = IssuingDriver.format_username();
 	Author.icon_url = IssuingDriver.get_avatar_url();
+	Author.proxy_icon_url = IssuingDriver.get_avatar_url();
+	Author.url = IssuingDriver.get_avatar_url();
 
 	// Create report message
 	dpp::message Message = GenerateReportMessage(Author, "Has reported their bus ride:", DestinationIndex, Record);
