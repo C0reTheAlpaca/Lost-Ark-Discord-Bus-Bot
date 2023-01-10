@@ -22,8 +22,8 @@ struct Destination
 	std::string ShortName;
 	std::string DisplayName;
 	std::string Thumbnail;
-	std::vector<std::string> SubRaids;
 	RaidType Type;
+	bool IsSubRaid;
 };
 
 struct RaidAchievements
@@ -38,7 +38,7 @@ class ConfigManager
 public:
 	ConfigManager(std::string FileName);
 	void Parse(std::string FileName);
-	void AddRaid(const JsonItems& Raid, const std::string Name, const std::string DisplayName);
+	void AddRaid(const JsonItems& Raid, const std::string Name, const std::string DisplayName, const bool IsSubRaid);
 	void CreateConfig(std::string FileName);
 
 public:

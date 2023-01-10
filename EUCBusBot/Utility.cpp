@@ -32,21 +32,20 @@ bool Utility::IsValidRaid(std::string Raid, bool Short)
 			[](unsigned char c) { return std::tolower(c); }
 		);
 
-		if (!Destination.SubRaids.empty())
+		if (Destination.IsSubRaid)
 		{
-			for (std::string SubRaid : Destination.SubRaids)
-			{
-				std::string SubRaidName = DestinationName + SubRaid;
+			auto Position = Destination.ShortName.find("_");
 
-				std::transform(SubRaidName.begin(), SubRaidName.end(), SubRaidName.begin(),
+			if (Position != std::string::npos)
+			{
+				DestinationName = Destination.ShortName.substr(0, Position);
+
+				std::transform(DestinationName.begin(), DestinationName.end(), DestinationName.begin(),
 					[](unsigned char c) { return std::tolower(c); }
 				);
-
-				if (SubRaidName == RaidName)
-					return true;
 			}
 
-			return false;
+			return DestinationName == RaidName;
 		}
 
 		return DestinationName == RaidName;
@@ -265,6 +264,7 @@ void Utility::GetRaidIndexShortName(const std::string Destination, int& Index, s
 
 	for (auto It = g_pConfig->m_Destinations.begin(); It != g_pConfig->m_Destinations.end(); It++)
 	{
+		// Names equal or raid is subraid and raidname contains destination
 		if (It->Name == Destination)
 		{
 			Index = std::distance(g_pConfig->m_Destinations.begin(), It);
@@ -283,6 +283,17 @@ bool Utility::IsSubRaid(const std::string Destination, std::string& RaidName)
 	{
 		RaidName = Destination.substr(0, Position);
 		return true;
+	}
+	else 
+	{
+		for (auto It = g_pConfig->m_Destinations.begin(); It != g_pConfig->m_Destinations.end(); It++)
+		{
+			// Names equal or raid is subraid and raidname contains destination
+			if (It->IsSubRaid && It->Name.find(Destination) != std::string::npos)
+			{
+				return true;
+			}
+		}
 	}
 
 	return false;

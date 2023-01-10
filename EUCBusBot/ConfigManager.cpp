@@ -96,12 +96,12 @@ void ConfigManager::Parse(std::string FileName)
 		{
 			for (std::string SubRaid : Raid.value()["SubRaids"])
 			{
-				AddRaid(Raid, Raid.key() + "_" + SubRaid, Raid.key() + " (" + SubRaid + ")");
+				AddRaid(Raid, Raid.key() + "_" + SubRaid, Raid.key() + " (" + SubRaid + ")", true);
 			}
 		}
 		else
 		{
-			AddRaid(Raid, Raid.key(), Raid.key());
+			AddRaid(Raid, Raid.key(), Raid.key(), false);
 		}
 	}
 
@@ -125,7 +125,7 @@ void ConfigManager::Parse(std::string FileName)
 	}
 }
 
-void ConfigManager::AddRaid(const JsonItems& Raid, const std::string Name, const std::string DisplayName)
+void ConfigManager::AddRaid(const JsonItems& Raid, const std::string Name, const std::string DisplayName, const bool IsSubRaid)
 {
 	Destination NewDest;
 	NewDest.Name = Name;
@@ -133,6 +133,7 @@ void ConfigManager::AddRaid(const JsonItems& Raid, const std::string Name, const
 	NewDest.DisplayName = DisplayName;
 	NewDest.Thumbnail = Raid.value()["Image"].get<std::string>();
 	NewDest.Type = m_RaidLookup[Raid.value()["Type"].get<std::string>()];
+	NewDest.IsSubRaid = IsSubRaid;
 
 	if (Raid.value().contains("Achievements") &&
 		Raid.value()["Achievements"].contains("Thresholds") &&
