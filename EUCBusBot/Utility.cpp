@@ -45,7 +45,9 @@ bool Utility::IsValidRaid(std::string Raid, bool Short)
 				);
 			}
 
-			return DestinationName == RaidName;
+			bool test = RaidName.find(DestinationName) != std::string::npos;
+
+			return RaidName.find(DestinationName) != std::string::npos;
 		}
 
 		return DestinationName == RaidName;
@@ -288,9 +290,16 @@ bool Utility::IsSubRaid(const std::string Destination, std::string& RaidName)
 	{
 		for (auto It = g_pConfig->m_Destinations.begin(); It != g_pConfig->m_Destinations.end(); It++)
 		{
+			std::string Name = It->Name;
+
+			std::transform(Name.begin(), Name.end(), Name.begin(),
+				[](unsigned char c) { return std::tolower(c); }
+			);
+
 			// Names equal or raid is subraid and raidname contains destination
-			if (It->IsSubRaid && It->Name.find(Destination) != std::string::npos)
+			if (It->IsSubRaid && Name.find(Destination) != std::string::npos)
 			{
+				RaidName = Name;
 				return true;
 			}
 		}

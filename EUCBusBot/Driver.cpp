@@ -106,14 +106,11 @@ void Driver::InfoRaid(const dpp::snowflake Driver, const std::string Raid, const
 
 	std::string RaidName;
 	bool IsSubRaid = Utility::IsSubRaid(Raid, RaidName);
-
 	std::string delimiter = IsSubRaid ? "'_'" : "' '";
+	std::string query = "SELECT * FROM `driver_completed_runs` WHERE DriverID = ? AND SUBSTRING_INDEX(Type, " + delimiter + ", 1) = ?;";
 
-
-	// Get runs of driver
-	std::unique_ptr<sql::PreparedStatement>pStmt(g_pConnection->prepareStatement(
-		"SELECT * FROM `driver_completed_runs` WHERE DriverID = ? AND SUBSTRING_INDEX(Type, " + delimiter + ", 1) = ?;"
-	));
+	// Get runs of driver,
+	std::unique_ptr<sql::PreparedStatement>pStmt(g_pConnection->prepareStatement(query));
 
 	pStmt->setInt64(1, Driver);
 	pStmt->setString(2, Raid);
@@ -123,7 +120,7 @@ void Driver::InfoRaid(const dpp::snowflake Driver, const std::string Raid, const
 
 	while (pRunResults->next())
 	{
-		if (Raid.find("Brelshaza") != std::string::npos) {
+		if (RaidName.find("brelshaza") != std::string::npos) {
 			int DestinationIndex;
 			std::string RaidShortName;
 			Utility::GetRaidIndexShortName(pRunResults->getString("Type"), DestinationIndex, RaidShortName);
