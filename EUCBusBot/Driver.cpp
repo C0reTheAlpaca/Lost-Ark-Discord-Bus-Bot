@@ -171,8 +171,6 @@ void Driver::VouchDriver(const dpp::interaction_create_t& event)
 	dpp::command_value UserValue = event.get_parameter("driver");
 	dpp::snowflake* pDriver = std::get_if<dpp::snowflake>(&UserValue);
 
-	Message.set_flags(dpp::m_ephemeral);
-
 	if (!pDriver)
 	{
 		Utility::ReplyError(event, "Invalid driver specified.");
@@ -218,7 +216,7 @@ void Driver::VouchDriver(const dpp::interaction_create_t& event)
 	pStmt->setUInt64(2, *pDriver);
 	pStmt->execute();
 
-	Embed.set_description("Vouch submitted.");
+	Embed.set_description(event.command.get_issuing_user().get_mention() + " has vouched for <@" + std::to_string(*pDriver) + ">.");
 	Embed.set_color(g_pConfig->m_MessageColor);
 	Message.add_embed(Embed);
 
