@@ -113,7 +113,7 @@ void Driver::InfoRaid(const dpp::snowflake Driver, std::string Raid, const dpp::
 	std::unique_ptr<sql::PreparedStatement>pStmt(g_pConnection->prepareStatement(query));
 
 	pStmt->setInt64(1, Driver);
-	pStmt->setString(2, Raid);
+	pStmt->setString(2, IsSubRaid ? RaidName : Raid);
 
 	// Store individual runs
 	std::unique_ptr<sql::ResultSet> pRunResults(pStmt->executeQuery());

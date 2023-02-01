@@ -33,7 +33,16 @@ bool Utility::ConvertToRaidQueryName(std::string& Raid, const bool ShortName)
 				{
 					Raid = Destination.ShortName;
 				} else {
-					Raid.replace(Position, Alias.length(), Destination.ShortName);
+					std::string ShortName = Destination.ShortName;
+					
+					// Check if raid is a subraid
+					auto SubPosition = ShortName.find("_");
+					if (SubPosition != std::string::npos)
+					{
+						ShortName = ShortName.substr(0, SubPosition);
+					}
+
+					Raid.replace(Position, Alias.length(), ShortName);
 				}
 
 				return true;
