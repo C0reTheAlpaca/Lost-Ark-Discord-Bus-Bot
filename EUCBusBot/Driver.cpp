@@ -90,7 +90,7 @@ void Driver::InfoGeneral(const dpp::snowflake Driver, const dpp::interaction_cre
 	event.reply(Message);
 }
 
-void Driver::InfoRaid(const dpp::snowflake Driver, const std::string Raid, const dpp::interaction_create_t& event)
+void Driver::InfoRaid(const dpp::snowflake Driver, std::string Raid, const dpp::interaction_create_t& event)
 {
 	dpp::embed Embed;
 	dpp::message Message;
@@ -243,7 +243,7 @@ void Driver::ViewDriverInfo(const dpp::interaction_create_t& event, dpp::snowfla
 
 	if (pRaid)
 	{
-		if (!Utility::IsValidRaid(*pRaid, true))
+		if (!Utility::ConvertToRaidQueryName(*pRaid, true))
 		{
 			Utility::ReplyError(event, "Invalid raid type specified.");
 			return;
@@ -295,7 +295,7 @@ void Driver::ModifyRuns(const dpp::interaction_create_t& event, bool ModifyCap, 
 		return;
 	}
 
-	if (!Utility::IsValidRaid(*pRaid, false))
+	if (!Utility::ConvertToRaidQueryName(*pRaid, false))
 	{
 		Utility::ReplyError(event, "Invalid raid type specified.");
 		return;
@@ -384,7 +384,7 @@ void Driver::WipeRuns(const dpp::interaction_create_t& event)
 
 	Utility::AddUpdateDriver(false, *pDriver);
 
-	if (pRaid && !Utility::IsValidRaid(*pRaid, false))
+	if (pRaid && !Utility::ConvertToRaidQueryName(*pRaid, false))
 	{
 		Utility::ReplyError(event, "Invalid raid type specified.");
 		return;

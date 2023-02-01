@@ -22,6 +22,7 @@ struct Destination
 	std::string ShortName;
 	std::string DisplayName;
 	std::string Thumbnail;
+	std::vector<std::string> Aliases;
 	RaidType Type;
 	bool IsSubRaid;
 };

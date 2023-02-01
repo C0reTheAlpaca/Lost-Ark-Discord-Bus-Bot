@@ -135,6 +135,15 @@ void ConfigManager::AddRaid(const JsonItems& Raid, const std::string Name, const
 	NewDest.Type = m_RaidLookup[Raid.value()["Type"].get<std::string>()];
 	NewDest.IsSubRaid = IsSubRaid;
 
+	if (Raid.value().contains("Aliases")) {
+		for (auto& Threshold : Raid.value()["Aliases"])
+		{
+			NewDest.Aliases.push_back(
+				Threshold.get<std::string>()
+			);
+		}
+	}
+
 	if (Raid.value().contains("Achievements") &&
 		Raid.value()["Achievements"].contains("Thresholds") &&
 		Raid.value()["Achievements"].contains("RoleIDs") &&
@@ -142,21 +151,21 @@ void ConfigManager::AddRaid(const JsonItems& Raid, const std::string Name, const
 	{
 		for (auto& Threshold : Raid.value()["Achievements"]["Thresholds"])
 		{
-			m_RaidAchievements[NewDest.ShortName].Thresholds.push_back(
+			m_RaidAchievements[Name].Thresholds.push_back(
 				Threshold.get<int>()
 			);
 		}
 
 		for (auto& RoleID : Raid.value()["Achievements"]["RoleIDs"])
 		{
-			m_RaidAchievements[NewDest.ShortName].Roles.push_back(
+			m_RaidAchievements[Name].Roles.push_back(
 				RoleID.get<uint64_t>()
 			);
 		}
 
 		for (auto& TierRoleID : Raid.value()["Achievements"]["TierRoleIDs"])
 		{
-			m_RaidAchievements[NewDest.ShortName].TierRoles.push_back(
+			m_RaidAchievements[Name].TierRoles.push_back(
 				TierRoleID.get<uint64_t>()
 			);
 		}

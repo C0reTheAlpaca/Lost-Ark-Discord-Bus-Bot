@@ -17,43 +17,31 @@ std::vector<dpp::snowflake> Utility::FilterMentions(std::string String)
 	return Mentions;
 }
 
-bool Utility::IsValidRaid(std::string Raid, bool Short)
+bool Utility::ConvertToRaidQueryName(std::string& Raid, const bool ShortName)
 {
-	auto IsType = [&](Destination Destination)
+	std::string RaidLowercase = ToLower(Raid);
+
+	for (Destination Destination : g_pConfig->m_Destinations)
 	{
-		std::string DestinationName = Short ? Destination.ShortName : Destination.Name;
-		std::string RaidName = Raid;
-
-		std::transform(RaidName.begin(), RaidName.end(), RaidName.begin(),
-			[](unsigned char c) { return std::tolower(c); }
-		);
-
-		std::transform(DestinationName.begin(), DestinationName.end(), DestinationName.begin(),
-			[](unsigned char c) { return std::tolower(c); }
-		);
-
-		if (Destination.IsSubRaid)
+		for (std::string Alias : Destination.Aliases)
 		{
-			auto Position = Destination.ShortName.find("_");
+			auto Position = RaidLowercase.find(ToLower(Alias));
 
 			if (Position != std::string::npos)
 			{
-				DestinationName = Destination.ShortName.substr(0, Position);
+				if (ShortName)
+				{
+					Raid = Destination.ShortName;
+				} else {
+					Raid.replace(Position, Alias.length(), Destination.ShortName);
+				}
 
-				std::transform(DestinationName.begin(), DestinationName.end(), DestinationName.begin(),
-					[](unsigned char c) { return std::tolower(c); }
-				);
+				return true;
 			}
-
-			bool test = RaidName.find(DestinationName) != std::string::npos;
-
-			return RaidName.find(DestinationName) != std::string::npos;
 		}
+	}
 
-		return DestinationName == RaidName;
-	};
-
-	return std::find_if(g_pConfig->m_Destinations.begin(), g_pConfig->m_Destinations.end(), IsType) != g_pConfig->m_Destinations.end();
+	return false;
 }
 
 std::vector<std::string> Utility::SplitString(std::string String, const std::string& Delimiter)
@@ -306,4 +294,15 @@ bool Utility::IsSubRaid(const std::string Destination, std::string& RaidName)
 	}
 
 	return false;
+}
+
+std::string Utility::ToLower(std::string String) 
+{
+	std::string Lower = String;
+
+	std::transform(Lower.begin(), Lower.end(), Lower.begin(),
+		[](unsigned char c) { return std::tolower(c); }
+	);
+
+	return Lower;
 }
